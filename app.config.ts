@@ -55,9 +55,13 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
+    // Disable push notifications for free Apple Developer accounts
+    config: {
+      usesApns: false,
+    },
   },
   android: {
     adaptiveIcon: {
