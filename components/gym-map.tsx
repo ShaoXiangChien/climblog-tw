@@ -124,10 +124,18 @@ export function GymMap({ gyms, userLocation, onGymPress, selectedGymId }: GymMap
             onPress={() => handleMarkerPress(gym.id)}
           >
             {/* Custom Marker */}
-            <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
-              <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
+            <View style={styles.markerWrapper}>
+              <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="figure.climbing" size={20} color="#FFFFFF" />
+              </View>
+              <View style={[styles.markerArrow, { borderTopColor: colors.primary }]} />
+              {/* Gym Name Label */}
+              <View style={[styles.markerLabel, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.markerLabelText, { color: colors.foreground }]} numberOfLines={1}>
+                  {gym.name}
+                </Text>
+              </View>
             </View>
-            <View style={[styles.markerArrow, { borderTopColor: colors.primary }]} />
 
             {/* Callout */}
             <Callout
@@ -211,28 +219,50 @@ const styles = StyleSheet.create({
   },
   
   // Marker
+  markerWrapper: {
+    alignItems: 'center',
+  },
   markerContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 8,
   },
   markerArrow: {
     width: 0,
     height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 8,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderTopWidth: 10,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     alignSelf: 'center',
-    marginTop: -2,
+    marginTop: -3,
+  },
+  markerLabel: {
+    marginTop: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    maxWidth: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  markerLabelText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 
   // Callout

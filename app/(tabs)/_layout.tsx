@@ -10,9 +10,9 @@ import { BlurTabBar } from "@/components/blur-tab-bar";
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  // 減少底部 padding，更緊湊
-  const bottomPadding = Platform.OS === "ios" ? Math.max(insets.bottom - 8, 4) : 4;
-  const tabBarHeight = 56 + bottomPadding; // 減少高度
+  // Optimized padding for floating tab bar
+  const bottomPadding = Platform.OS === "ios" ? Math.max(insets.bottom - 12, 8) : 8;
+  const tabBarHeight = 64 + bottomPadding; // Slightly taller for better touch targets
 
   return (
     <Tabs
@@ -24,19 +24,19 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarStyle: {
           position: 'absolute',
-          paddingTop: 6,  // 減少上方 padding
+          paddingTop: 8,
           paddingBottom: bottomPadding,
           height: tabBarHeight,
           backgroundColor: 'transparent',
           borderTopWidth: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: '600',
-          marginTop: 2,  // 圖標和文字更接近
+          marginTop: 4,
         },
         tabBarIconStyle: {
-          marginBottom: 0,  // 移除負 margin
+          marginBottom: 2,
         },
       }}
     >
@@ -44,28 +44,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "探索",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="magnifyingglass" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="magnifyingglass" color={color} />,
         }}
       />
       <Tabs.Screen
         name="record"
         options={{
           title: "記錄",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="plus.circle.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="plus.circle.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: "歷史",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="clock.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="clock.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "我",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="person.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.fill" color={color} />,
         }}
       />
     </Tabs>

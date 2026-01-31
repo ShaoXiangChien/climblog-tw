@@ -1,13 +1,13 @@
-import { StyleSheet, Dimensions, View } from 'react-native';
+import { StyleSheet, Dimensions, View, Platform } from 'react-native';
 import { BottomTabBar } from '@react-navigation/bottom-tabs';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-// Tab bar width: 85% of screen width (more compact like PickleTown)
-const TAB_BAR_WIDTH_PERCENTAGE = 0.85;
+// Tab bar width: 90% of screen width for better floating effect
+const TAB_BAR_WIDTH_PERCENTAGE = 0.90;
 
 export function BlurTabBar(props: any) {
-  // 覆蓋背景色
+  // Override background to transparent
   const modifiedProps = {
     ...props,
     style: [
@@ -18,14 +18,15 @@ export function BlurTabBar(props: any) {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1b', '#12121400']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.gradient}
+      <BlurView
+        intensity={80}
+        tint="dark"
+        style={styles.blurContainer}
       >
+        {/* Semi-transparent dark overlay for better contrast */}
+        <View style={styles.overlay} />
         <BottomTabBar {...modifiedProps} />
-      </LinearGradient>
+      </BlurView>
     </View>
   );
 }
@@ -33,20 +34,25 @@ export function BlurTabBar(props: any) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 12,
     left: (SCREEN_WIDTH * (1 - TAB_BAR_WIDTH_PERCENTAGE)) / 2,
     right: (SCREEN_WIDTH * (1 - TAB_BAR_WIDTH_PERCENTAGE)) / 2,
-    borderRadius: 24,
+    borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#1a1a1b',
-    // Shadow
+    // Enhanced shadow for floating effect
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 16,
   },
-  gradient: {
-    borderRadius: 24,
+  blurContainer: {
+    borderRadius: 28,
+    overflow: 'hidden',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(18, 18, 20, 0.75)', // Semi-transparent dark overlay
+    borderRadius: 28,
   },
 });
