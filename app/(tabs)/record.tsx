@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, Platform, Modal, TextInput, ScrollView, FlatList, Alert, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform, Modal, TextInput, ScrollView, FlatList, Alert, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
@@ -159,238 +159,255 @@ function AddEntryModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-          {/* Header */}
-          <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.foreground }]}>新增紀錄</Text>
-            <Pressable onPress={handleClose}>
-              <IconSymbol name="xmark" size={24} color={colors.muted} />
-            </Pressable>
-          </View>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+              {/* Header */}
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.foreground }]}>新增紀錄</Text>
+                <Pressable onPress={handleClose}>
+                  <IconSymbol name="xmark" size={24} color={colors.muted} />
+                </Pressable>
+              </View>
 
-          {/* Grade Picker */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.muted }]}>難度等級</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.gradeRow}>
-                {V_GRADES.map((grade) => (
-                  <Pressable
-                    key={grade}
-                    onPress={() => {
-                      if (Platform.OS !== 'web') {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      }
-                      setSelectedGrade(grade);
-                    }}
-                    style={({ pressed }) => [
-                      styles.gradeButton,
-                      {
-                        backgroundColor: selectedGrade === grade ? colors.primary : colors.surface,
-                        borderColor: selectedGrade === grade ? colors.primary : colors.border,
-                      },
-                      pressed && { opacity: 0.8 },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.gradeText,
-                        { color: selectedGrade === grade ? '#FFFFFF' : colors.foreground },
+              {/* Scrollable Content */}
+              <ScrollView 
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {/* Grade Picker */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.muted }]}>難度等級</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={styles.gradeRow}>
+                      {V_GRADES.map((grade) => (
+                        <Pressable
+                          key={grade}
+                          onPress={() => {
+                            if (Platform.OS !== 'web') {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }
+                            setSelectedGrade(grade);
+                          }}
+                          style={({ pressed }) => [
+                            styles.gradeButton,
+                            {
+                              backgroundColor: selectedGrade === grade ? colors.primary : colors.surface,
+                              borderColor: selectedGrade === grade ? colors.primary : colors.border,
+                            },
+                            pressed && { opacity: 0.8 },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.gradeText,
+                              { color: selectedGrade === grade ? '#FFFFFF' : colors.foreground },
+                            ]}
+                          >
+                            {grade}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </ScrollView>
+                </View>
+
+                {/* Result Toggle */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.muted }]}>結果</Text>
+                  <View style={styles.resultRow}>
+                    <Pressable
+                      onPress={() => {
+                        if (Platform.OS !== 'web') {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        }
+                        setResult('conquer');
+                      }}
+                      style={({ pressed }) => [
+                        styles.resultButton,
+                        {
+                          backgroundColor: result === 'conquer' ? colors.success : colors.surface,
+                          borderColor: result === 'conquer' ? colors.success : colors.border,
+                        },
+                        pressed && { opacity: 0.8 },
                       ]}
                     >
-                      {grade}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
+                      <IconSymbol
+                        name="checkmark"
+                        size={20}
+                        color={result === 'conquer' ? '#FFFFFF' : colors.muted}
+                      />
+                      <Text
+                        style={[
+                          styles.resultText,
+                          { color: result === 'conquer' ? '#FFFFFF' : colors.foreground },
+                        ]}
+                      >
+                        Conquer
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        if (Platform.OS !== 'web') {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        }
+                        setResult('fail');
+                      }}
+                      style={({ pressed }) => [
+                        styles.resultButton,
+                        {
+                          backgroundColor: result === 'fail' ? colors.warning : colors.surface,
+                          borderColor: result === 'fail' ? colors.warning : colors.border,
+                        },
+                        pressed && { opacity: 0.8 },
+                      ]}
+                    >
+                      <IconSymbol
+                        name="xmark"
+                        size={20}
+                        color={result === 'fail' ? '#FFFFFF' : colors.muted}
+                      />
+                      <Text
+                        style={[
+                          styles.resultText,
+                          { color: result === 'fail' ? '#FFFFFF' : colors.foreground },
+                        ]}
+                      >
+                        Not Yet
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
 
-          {/* Result Toggle */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.muted }]}>結果</Text>
-            <View style={styles.resultRow}>
-              <Pressable
-                onPress={() => {
-                  if (Platform.OS !== 'web') {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  }
-                  setResult('conquer');
-                }}
-                style={({ pressed }) => [
-                  styles.resultButton,
-                  {
-                    backgroundColor: result === 'conquer' ? colors.success : colors.surface,
-                    borderColor: result === 'conquer' ? colors.success : colors.border,
-                  },
-                  pressed && { opacity: 0.8 },
-                ]}
-              >
-                <IconSymbol
-                  name="checkmark"
-                  size={20}
-                  color={result === 'conquer' ? '#FFFFFF' : colors.muted}
-                />
-                <Text
-                  style={[
-                    styles.resultText,
-                    { color: result === 'conquer' ? '#FFFFFF' : colors.foreground },
+                {/* Attempts Stepper */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.muted }]}>嘗試次數</Text>
+                  <View style={styles.stepperRow}>
+                    <Pressable
+                      onPress={() => {
+                        if (attempts > 1) {
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                          setAttempts(attempts - 1);
+                        }
+                      }}
+                      style={({ pressed }) => [
+                        styles.stepperButton,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                        pressed && { opacity: 0.7 },
+                      ]}
+                    >
+                      <IconSymbol name="minus" size={20} color={colors.foreground} />
+                    </Pressable>
+                    <Text style={[styles.stepperValue, { color: colors.foreground }]}>{attempts}</Text>
+                    <Pressable
+                      onPress={() => {
+                        if (attempts < 10) {
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                          setAttempts(attempts + 1);
+                        }
+                      }}
+                      style={({ pressed }) => [
+                        styles.stepperButton,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                        pressed && { opacity: 0.7 },
+                      ]}
+                    >
+                      <IconSymbol name="plus" size={20} color={colors.foreground} />
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Note Input */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.muted }]}>備註（選填）</Text>
+                  <TextInput
+                    style={[
+                      styles.noteInput,
+                      { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground },
+                    ]}
+                    placeholder="例如：紅色路線、腳點很小..."
+                    placeholderTextColor={colors.muted}
+                    value={note}
+                    onChangeText={(text) => setNote(text.slice(0, 80))}
+                    maxLength={80}
+                    multiline
+                    blurOnSubmit={true}
+                  />
+                  <Text style={[styles.charCount, { color: colors.muted }]}>{note.length}/80</Text>
+                </View>
+
+                {/* Photo Section */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionLabel, { color: colors.muted }]}>照片（選填）</Text>
+                  {photoUri ? (
+                    <View style={styles.photoPreviewContainer}>
+                      <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+                      <Pressable
+                        onPress={removePhoto}
+                        style={({ pressed }) => [
+                          styles.removePhotoButton,
+                          { backgroundColor: colors.error },
+                          pressed && { opacity: 0.8 },
+                        ]}
+                      >
+                        <IconSymbol name="xmark" size={16} color="#FFFFFF" />
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <View style={styles.photoButtonsRow}>
+                      <Pressable
+                        onPress={takePhoto}
+                        style={({ pressed }) => [
+                          styles.photoButton,
+                          { backgroundColor: colors.surface, borderColor: colors.border },
+                          pressed && { opacity: 0.7 },
+                        ]}
+                      >
+                        <IconSymbol name="camera.fill" size={24} color={colors.primary} />
+                        <Text style={[styles.photoButtonText, { color: colors.foreground }]}>拍照</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={pickImage}
+                        style={({ pressed }) => [
+                          styles.photoButton,
+                          { backgroundColor: colors.surface, borderColor: colors.border },
+                          pressed && { opacity: 0.7 },
+                        ]}
+                      >
+                        <IconSymbol name="photo.fill" size={24} color={colors.primary} />
+                        <Text style={[styles.photoButtonText, { color: colors.foreground }]}>相簿</Text>
+                      </Pressable>
+                    </View>
+                  )}
+                </View>
+
+                {/* Save Button */}
+                <Pressable
+                  onPress={handleSave}
+                  style={({ pressed }) => [
+                    styles.saveButton,
+                    { backgroundColor: colors.primary },
+                    pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
                   ]}
                 >
-                  Conquer
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  if (Platform.OS !== 'web') {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  }
-                  setResult('fail');
-                }}
-                style={({ pressed }) => [
-                  styles.resultButton,
-                  {
-                    backgroundColor: result === 'fail' ? colors.warning : colors.surface,
-                    borderColor: result === 'fail' ? colors.warning : colors.border,
-                  },
-                  pressed && { opacity: 0.8 },
-                ]}
-              >
-                <IconSymbol
-                  name="xmark"
-                  size={20}
-                  color={result === 'fail' ? '#FFFFFF' : colors.muted}
-                />
-                <Text
-                  style={[
-                    styles.resultText,
-                    { color: result === 'fail' ? '#FFFFFF' : colors.foreground },
-                  ]}
-                >
-                  Not Yet
-                </Text>
-              </Pressable>
+                  <Text style={styles.saveButtonText}>儲存</Text>
+                </Pressable>
+              </ScrollView>
             </View>
           </View>
-
-          {/* Attempts Stepper */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.muted }]}>嘗試次數</Text>
-            <View style={styles.stepperRow}>
-              <Pressable
-                onPress={() => {
-                  if (attempts > 1) {
-                    if (Platform.OS !== 'web') {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                    setAttempts(attempts - 1);
-                  }
-                }}
-                style={({ pressed }) => [
-                  styles.stepperButton,
-                  { backgroundColor: colors.surface, borderColor: colors.border },
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <IconSymbol name="minus" size={20} color={colors.foreground} />
-              </Pressable>
-              <Text style={[styles.stepperValue, { color: colors.foreground }]}>{attempts}</Text>
-              <Pressable
-                onPress={() => {
-                  if (attempts < 10) {
-                    if (Platform.OS !== 'web') {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                    setAttempts(attempts + 1);
-                  }
-                }}
-                style={({ pressed }) => [
-                  styles.stepperButton,
-                  { backgroundColor: colors.surface, borderColor: colors.border },
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <IconSymbol name="plus" size={20} color={colors.foreground} />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Note Input */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.muted }]}>備註（選填）</Text>
-            <TextInput
-              style={[
-                styles.noteInput,
-                { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground },
-              ]}
-              placeholder="例如：紅色路線、腳點很小..."
-              placeholderTextColor={colors.muted}
-              value={note}
-              onChangeText={(text) => setNote(text.slice(0, 80))}
-              maxLength={80}
-              multiline
-            />
-            <Text style={[styles.charCount, { color: colors.muted }]}>{note.length}/80</Text>
-          </View>
-
-          {/* Photo Section */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.muted }]}>照片（選填）</Text>
-            {photoUri ? (
-              <View style={styles.photoPreviewContainer}>
-                <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-                <Pressable
-                  onPress={removePhoto}
-                  style={({ pressed }) => [
-                    styles.removePhotoButton,
-                    { backgroundColor: colors.error },
-                    pressed && { opacity: 0.8 },
-                  ]}
-                >
-                  <IconSymbol name="xmark" size={16} color="#FFFFFF" />
-                </Pressable>
-              </View>
-            ) : (
-              <View style={styles.photoButtonsRow}>
-                <Pressable
-                  onPress={takePhoto}
-                  style={({ pressed }) => [
-                    styles.photoButton,
-                    { backgroundColor: colors.surface, borderColor: colors.border },
-                    pressed && { opacity: 0.7 },
-                  ]}
-                >
-                  <IconSymbol name="camera.fill" size={24} color={colors.primary} />
-                  <Text style={[styles.photoButtonText, { color: colors.foreground }]}>拍照</Text>
-                </Pressable>
-                <Pressable
-                  onPress={pickImage}
-                  style={({ pressed }) => [
-                    styles.photoButton,
-                    { backgroundColor: colors.surface, borderColor: colors.border },
-                    pressed && { opacity: 0.7 },
-                  ]}
-                >
-                  <IconSymbol name="photo.fill" size={24} color={colors.primary} />
-                  <Text style={[styles.photoButtonText, { color: colors.foreground }]}>相簿</Text>
-                </Pressable>
-              </View>
-            )}
-          </View>
-
-          {/* Save Button */}
-          <Pressable
-            onPress={handleSave}
-            style={({ pressed }) => [
-              styles.saveButton,
-              { backgroundColor: colors.primary },
-              pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
-            ]}
-          >
-            <Text style={styles.saveButtonText}>儲存</Text>
-          </Pressable>
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

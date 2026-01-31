@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,11 @@ import {
   ScrollView,
   Dimensions,
   Linking,
+  KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -458,11 +461,12 @@ function WebMapCard({ gym, distance, onPress, onMapOpen }: {
 }
 
 // Sort Options
-type SortOption = 'distance' | 'name' | 'price';
+type SortOption = 'distance' | 'price';
 
 export default function ExploreScreen() {
   const colors = useColors();
   const router = useRouter();
+  const navigation = useNavigation();
   const mapRef = useRef<any>(null);
   const { location, loading: locationLoading, refresh: refreshLocation } = useLocation();
   const favorites = useFavorites();
@@ -475,6 +479,15 @@ export default function ExploreScreen() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('全部');
   const [sortBy, setSortBy] = useState<SortOption>('distance');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Hide tab bar when in map view
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: {
+        display: viewMode === 'map' ? 'none' : 'flex',
+      },
+    });
+  }, [viewMode, navigation]);
 
   // Calculate distances and sort gyms
   const gymsWithDistance = useMemo<GymWithDistance[]>(() => {
@@ -521,8 +534,6 @@ export default function ExploreScreen() {
     // Sort
     if (sortBy === 'distance' && location) {
       result = [...result].sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
-    } else if (sortBy === 'name') {
-      result = [...result].sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
     } else if (sortBy === 'price') {
       result = [...result].sort((a, b) => (a.priceFrom ?? Infinity) - (b.priceFrom ?? Infinity));
     }
@@ -686,24 +697,32 @@ export default function ExploreScreen() {
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchSection}>
-        <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <IconSymbol name="magnifyingglass" size={20} color={colors.muted} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder="搜尋館名或地區..."
-            placeholderTextColor={colors.muted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            returnKeyType="search"
-          />
-          {searchQuery.length > 0 && (
-            <Pressable onPress={() => setSearchQuery('')}>
-              <IconSymbol name="xmark.circle.fill" size={20} color={colors.muted} />
-            </Pressable>
-          )}
-        </View>
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.searchSection}>
+            <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <IconSymbol name="magnifyingglass" size={20} color={colors.muted} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.foreground }]}
+                placeholder="搜尋館名或地區..."
+                placeholderTextColor={colors.muted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                blurOnSubmit={true}
+              />
+              {searchQuery.length > 0 && (
+                <Pressable onPress={() => setSearchQuery('')}>
+                  <IconSymbol name="xmark.circle.fill" size={20} color={colors.muted} />
+                </Pressable>
+              )}
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
       {/* Filters */}
       <View style={styles.filtersSection}>
@@ -763,22 +782,6 @@ export default function ExploreScreen() {
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => setSortBy('name')}
-              style={[
-                styles.sortOption,
-                sortBy === 'name' && { backgroundColor: colors.primary + '15' },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.sortOptionText,
-                  { color: sortBy === 'name' ? colors.primary : colors.muted },
-                ]}
-              >
-                名稱
-              </Text>
-            </Pressable>
-            <Pressable
               onPress={() => setSortBy('price')}
               style={[
                 styles.sortOption,
@@ -817,117 +820,123 @@ export default function ExploreScreen() {
     if (!MapView) return null;
 
     return (
-      <ScreenContainer edges={['left', 'right']}>
-        <View style={styles.mapContainer}>
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-            initialRegion={mapRegion}
-            showsUserLocation={true}
-            showsMyLocationButton={false}
-            showsCompass={true}
-          >
-            {filteredGyms.map(gym => (
-              <Marker
-                key={gym.id}
-                coordinate={{ latitude: gym.lat, longitude: gym.lng }}
-                onPress={() => {
+      <View style={styles.fullScreenMapContainer}>
+        <MapView
+          ref={mapRef}
+          style={styles.fullScreenMap}
+          provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+          initialRegion={mapRegion}
+          showsUserLocation={true}
+          showsMyLocationButton={false}
+          showsCompass={true}
+        >
+          {filteredGyms.map(gym => (
+            <Marker
+              key={gym.id}
+              coordinate={{ latitude: gym.lat, longitude: gym.lng }}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-              >
-                {/* Custom Marker */}
-                <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
-                  <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
-                </View>
-                <View style={[styles.markerArrow, { borderTopColor: colors.primary }]} />
+                }
+              }}
+            >
+              {/* Custom Marker */}
+              <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
+              </View>
+              <View style={[styles.markerArrow, { borderTopColor: colors.primary }]} />
 
-                {/* Callout */}
-                <Callout tooltip onPress={() => handleGymPress(gym.id)}>
-                  <View style={[styles.callout, { backgroundColor: colors.surface }]}>
-                    <Text style={[styles.calloutTitle, { color: colors.foreground }]} numberOfLines={1}>
-                      {gym.name}
-                    </Text>
-                    <View style={styles.calloutMeta}>
-                      <View style={[styles.calloutBadge, { backgroundColor: colors.primary + '20' }]}>
-                        <Text style={[styles.calloutBadgeText, { color: colors.primary }]}>
-                          {TYPE_LABELS[gym.type]}
-                        </Text>
-                      </View>
-                      {gym.distance !== null && (
-                        <Text style={[styles.calloutDistance, { color: colors.success }]}>
-                          {formatDistance(gym.distance)}
-                        </Text>
-                      )}
-                    </View>
-                    <Text style={[styles.calloutAddress, { color: colors.muted }]} numberOfLines={1}>
-                      {gym.city}・{gym.district}
-                    </Text>
-                    <View style={styles.calloutAction}>
-                      <Text style={[styles.calloutActionText, { color: colors.primary }]}>
-                        點擊查看詳情 →
+              {/* Callout */}
+              <Callout tooltip onPress={() => handleGymPress(gym.id)}>
+                <View style={[styles.callout, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.calloutTitle, { color: colors.foreground }]} numberOfLines={1}>
+                    {gym.name}
+                  </Text>
+                  <View style={styles.calloutMeta}>
+                    <View style={[styles.calloutBadge, { backgroundColor: colors.primary + '20' }]}>
+                      <Text style={[styles.calloutBadgeText, { color: colors.primary }]}>
+                        {TYPE_LABELS[gym.type]}
                       </Text>
                     </View>
+                    {gym.distance !== null && (
+                      <Text style={[styles.calloutDistance, { color: colors.success }]}>
+                        {formatDistance(gym.distance)}
+                      </Text>
+                    )}
                   </View>
-                </Callout>
-              </Marker>
-            ))}
-          </MapView>
+                  <Text style={[styles.calloutAddress, { color: colors.muted }]} numberOfLines={1}>
+                    {gym.city}・{gym.district}
+                  </Text>
+                  <View style={styles.calloutAction}>
+                    <Text style={[styles.calloutActionText, { color: colors.primary }]}>
+                      點擊查看詳情 →
+                    </Text>
+                  </View>
+                </View>
+              </Callout>
+            </Marker>
+          ))}
+        </MapView>
 
-          {/* Map Header */}
-          <View style={[styles.mapHeader, { backgroundColor: colors.background }]}>
-            <View style={styles.mapHeaderContent}>
-              <Text style={[styles.mapHeaderTitle, { color: colors.foreground }]}>
-                探索攀岩館
-              </Text>
-              <Text style={[styles.mapHeaderSubtitle, { color: colors.muted }]}>
-                {filteredGyms.length} 間攀岩館
-              </Text>
-            </View>
-            <ViewModeToggle mode={viewMode} onModeChange={setViewMode} />
-          </View>
+        {/* Back Button - Top Left */}
+        <Pressable
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            }
+            setViewMode('list');
+          }}
+          style={({ pressed }) => [
+            styles.backButton,
+            { backgroundColor: colors.surface },
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <IconSymbol name="chevron.left" size={24} color={colors.foreground} />
+        </Pressable>
 
-          {/* Map Filter Chips */}
-          <View style={styles.mapFilters}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.mapFilterChips}>
-                {REGIONS.slice(0, 5).map(region => (
-                  <Pressable
-                    key={region}
-                    onPress={() => {
+        {/* Map Filter Chips */}
+        <View style={styles.mapFilters}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.mapFilterChips}>
+              {REGIONS.slice(0, 5).map(region => (
+                <Pressable
+                  key={region}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setRegionFilter(region);
-                    }}
+                    }
+                    setRegionFilter(region);
+                  }}
+                  style={[
+                    styles.mapFilterChip,
+                    {
+                      backgroundColor: regionFilter === region ? colors.primary : colors.surface,
+                    },
+                  ]}
+                >
+                  <Text
                     style={[
-                      styles.mapFilterChip,
-                      {
-                        backgroundColor: regionFilter === region ? colors.primary : colors.surface,
-                      },
+                      styles.mapFilterChipText,
+                      { color: regionFilter === region ? '#FFFFFF' : colors.foreground },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.mapFilterChipText,
-                        { color: regionFilter === region ? '#FFFFFF' : colors.foreground },
-                      ]}
-                    >
-                      {region}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          {/* Gym Count Badge */}
-          <View style={[styles.countBadge, { backgroundColor: colors.surface }]}>
-            <IconSymbol name="figure.climbing" size={14} color={colors.primary} />
-            <Text style={[styles.countText, { color: colors.foreground }]}>
-              {filteredGyms.length} 間
-            </Text>
-          </View>
+                    {region}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
         </View>
-      </ScreenContainer>
+
+        {/* Gym Count Badge */}
+        <View style={[styles.countBadge, { backgroundColor: colors.surface }]}>
+          <IconSymbol name="figure.climbing" size={14} color={colors.primary} />
+          <Text style={[styles.countText, { color: colors.foreground }]}>
+            {filteredGyms.length} 間
+          </Text>
+        </View>
+      </View>
     );
   };
 
@@ -1432,6 +1441,31 @@ const styles = StyleSheet.create({
     flex: 1,
     width: SCREEN_WIDTH,
   },
+  // Full Screen Map View
+  fullScreenMapContainer: {
+    flex: 1,
+    width: SCREEN_WIDTH,
+    height: '100%',
+  },
+  fullScreenMap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  // Back Button
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 50,
+    left: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   mapHeader: {
     position: 'absolute',
     top: 0,
@@ -1456,7 +1490,7 @@ const styles = StyleSheet.create({
   },
   mapFilters: {
     position: 'absolute',
-    top: 110,
+    top: Platform.OS === 'ios' ? 120 : 110,
     left: 0,
     right: 0,
   },

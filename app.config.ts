@@ -44,10 +44,6 @@ const config: ExpoConfig = {
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
-    // Disable push notifications for free Apple Developer accounts
-    config: {
-      usesApns: false,
-    },
   },
   android: {
     adaptiveIcon: {
@@ -60,6 +56,12 @@ const config: ExpoConfig = {
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
     permissions: ["POST_NOTIFICATIONS"],
+    // Google Maps API Key configuration
+    config: {
+      googleMaps: {
+        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID || "",
+      },
+    },
     intentFilters: [
       {
         action: "VIEW",
