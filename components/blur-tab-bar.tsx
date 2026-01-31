@@ -7,12 +7,15 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const TAB_BAR_WIDTH_PERCENTAGE = 0.90;
 
 export function BlurTabBar(props: any) {
-  // Override background to transparent
+  // Aggressively override all background styles to transparent
   const modifiedProps = {
     ...props,
     style: [
       props.style,
-      { backgroundColor: 'transparent' }
+      { 
+        backgroundColor: 'transparent',
+        borderTopColor: 'transparent',
+      }
     ]
   };
 
@@ -53,6 +56,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 24,
     elevation: 16,
+    // Force dark background for Android
+    backgroundColor: Platform.OS === 'android' ? 'rgba(26, 26, 27, 0.95)' : 'transparent',
   },
   blurContainer: {
     borderRadius: 28,
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
   },
   androidContainer: {
     borderRadius: 28,
-    backgroundColor: 'rgba(26, 26, 27, 0.95)', // Solid translucent background for Android
+    backgroundColor: 'transparent', // Let container handle the background
     overflow: 'hidden',
   },
 });

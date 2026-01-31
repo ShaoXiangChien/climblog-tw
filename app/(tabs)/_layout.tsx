@@ -29,6 +29,8 @@ export default function TabLayout() {
           height: tabBarHeight,
           backgroundColor: 'transparent',
           borderTopWidth: 0,
+          borderTopColor: 'transparent',
+          elevation: 0, // Remove default elevation
         },
         tabBarLabelStyle: {
           fontSize: 11,
