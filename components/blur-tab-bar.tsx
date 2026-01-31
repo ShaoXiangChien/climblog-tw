@@ -16,17 +16,25 @@ export function BlurTabBar(props: any) {
     ]
   };
 
+  // Use BlurView on iOS, solid translucent background on Android for consistency
+  const TabBarWrapper = Platform.OS === 'ios' ? (
+    <BlurView
+      intensity={80}
+      tint="dark"
+      style={styles.blurContainer}
+    >
+      <View style={styles.overlayIOS} />
+      <BottomTabBar {...modifiedProps} />
+    </BlurView>
+  ) : (
+    <View style={styles.androidContainer}>
+      <BottomTabBar {...modifiedProps} />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <BlurView
-        intensity={80}
-        tint="dark"
-        style={styles.blurContainer}
-      >
-        {/* Semi-transparent dark overlay for better contrast */}
-        <View style={styles.overlay} />
-        <BottomTabBar {...modifiedProps} />
-      </BlurView>
+      {TabBarWrapper}
     </View>
   );
 }
@@ -50,9 +58,14 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     overflow: 'hidden',
   },
-  overlay: {
+  overlayIOS: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(18, 18, 20, 0.75)', // Semi-transparent dark overlay
+    backgroundColor: 'rgba(18, 18, 20, 0.75)', // Semi-transparent dark overlay for iOS
     borderRadius: 28,
+  },
+  androidContainer: {
+    borderRadius: 28,
+    backgroundColor: 'rgba(26, 26, 27, 0.95)', // Solid translucent background for Android
+    overflow: 'hidden',
   },
 });
