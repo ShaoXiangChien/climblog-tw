@@ -7,6 +7,13 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const TAB_BAR_WIDTH_PERCENTAGE = 0.90;
 
 export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  // Check if tab bar should be hidden
+  const shouldHide = descriptors[state.routes[state.index].key]?.options?.tabBarStyle?.display === 'none';
+  
+  if (shouldHide) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       {Platform.OS === 'ios' ? (
