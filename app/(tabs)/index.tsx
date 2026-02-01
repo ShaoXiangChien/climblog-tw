@@ -886,11 +886,11 @@ export default function ExploreScreen() {
           }}
           style={({ pressed }) => [
             styles.backButton,
-            { backgroundColor: 'rgba(255, 255, 255, 0.95)' },
+            { backgroundColor: 'rgba(26, 26, 27, 0.92)' },
             pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] },
           ]}
         >
-          <IconSymbol name="chevron.left" size={24} color="#1A1A1E" />
+          <IconSymbol name="chevron.left" size={28} color="#FFFFFF" />
         </Pressable>
 
         {/* Map Filter Chips */}
