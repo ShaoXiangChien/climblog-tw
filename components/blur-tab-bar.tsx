@@ -125,16 +125,16 @@ const styles = StyleSheet.create({
   },
   tabBarContent: {
     flexDirection: 'row',
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
-    paddingHorizontal: 8,
+    paddingTop: 4,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 6,
+    paddingHorizontal: 2,
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    gap: 4,
+    paddingVertical: 4,
+    gap: 2,
   },
   tabButtonPressed: {
     opacity: 0.7,

@@ -483,9 +483,7 @@ export default function ExploreScreen() {
   // Hide tab bar when in map view
   useLayoutEffect(() => {
     navigation.setOptions({
-      tabBarStyle: {
-        display: viewMode === 'map' ? 'none' : 'flex',
-      },
+      tabBarStyle: viewMode === 'map' ? { display: 'none' } : undefined,
     });
   }, [viewMode, navigation]);
 
