@@ -1,43 +1,96 @@
-import { StyleSheet, Dimensions, View, Platform } from 'react-native';
-import { BottomTabBar } from '@react-navigation/bottom-tabs';
+import { StyleSheet, Dimensions, View, Platform, Pressable, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-// Tab bar width: 90% of screen width for better floating effect
 const TAB_BAR_WIDTH_PERCENTAGE = 0.90;
 
-export function BlurTabBar(props: any) {
-  // Aggressively override all background styles to transparent
-  const modifiedProps = {
-    ...props,
-    style: [
-      props.style,
-      { 
-        backgroundColor: 'transparent',
-        borderTopColor: 'transparent',
-      }
-    ]
-  };
-
-  // Use BlurView on iOS, solid translucent background on Android for consistency
-  const TabBarWrapper = Platform.OS === 'ios' ? (
-    <BlurView
-      intensity={80}
-      tint="dark"
-      style={styles.blurContainer}
-    >
-      <View style={styles.overlayIOS} />
-      <BottomTabBar {...modifiedProps} />
-    </BlurView>
-  ) : (
-    <View style={styles.androidContainer}>
-      <BottomTabBar {...modifiedProps} />
-    </View>
-  );
-
+export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
     <View style={styles.container}>
-      {TabBarWrapper}
+      {Platform.OS === 'ios' ? (
+        <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
+          <View style={styles.overlay} />
+          <TabBarContent state={state} descriptors={descriptors} navigation={navigation} />
+        </BlurView>
+      ) : (
+        <View style={styles.androidContainer}>
+          <TabBarContent state={state} descriptors={descriptors} navigation={navigation} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+function TabBarContent({ state, descriptors, navigation }: BottomTabBarProps) {
+  return (
+    <View style={styles.tabBarContent}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const label = options.tabBarLabel !== undefined
+          ? options.tabBarLabel
+          : options.title !== undefined
+          ? options.title
+          : route.name;
+
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          if (Platform.OS !== 'web') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+
+        const onLongPress = () => {
+          if (Platform.OS !== 'web') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          }
+          navigation.emit({
+            type: 'tabLongPress',
+            target: route.key,
+          });
+        };
+
+        const color = isFocused
+          ? (options.tabBarActiveTintColor || '#FF6B35')
+          : (options.tabBarInactiveTintColor || '#8E8E93');
+
+        return (
+          <Pressable
+            key={route.key}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            testID={options.tabBarTestID}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed && styles.tabButtonPressed,
+            ]}
+          >
+            {options.tabBarIcon && options.tabBarIcon({ 
+              focused: isFocused, 
+              color, 
+              size: 24 
+            })}
+            <Text style={[styles.tabLabel, { color }]}>
+              {typeof label === 'string' ? label : ''}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -50,27 +103,45 @@ const styles = StyleSheet.create({
     right: (SCREEN_WIDTH * (1 - TAB_BAR_WIDTH_PERCENTAGE)) / 2,
     borderRadius: 28,
     overflow: 'hidden',
-    // Enhanced shadow for floating effect
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
     shadowRadius: 24,
     elevation: 16,
-    // Force dark background for Android
-    backgroundColor: Platform.OS === 'android' ? 'rgba(26, 26, 27, 0.95)' : 'transparent',
   },
   blurContainer: {
     borderRadius: 28,
     overflow: 'hidden',
   },
-  overlayIOS: {
+  overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(18, 18, 20, 0.75)', // Semi-transparent dark overlay for iOS
+    backgroundColor: 'rgba(18, 18, 20, 0.75)',
     borderRadius: 28,
   },
   androidContainer: {
     borderRadius: 28,
-    backgroundColor: 'transparent', // Let container handle the background
+    backgroundColor: 'rgba(26, 26, 27, 0.95)',
     overflow: 'hidden',
+  },
+  tabBarContent: {
+    flexDirection: 'row',
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+    paddingHorizontal: 8,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    gap: 4,
+  },
+  tabButtonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
