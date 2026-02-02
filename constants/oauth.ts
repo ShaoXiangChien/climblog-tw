@@ -2,8 +2,8 @@ import * as Linking from "expo-linking";
 import * as ReactNative from "react-native";
 
 // Bundle ID and deep link scheme for the app
-const bundleId = "tw.rocker.app";
-const schemeFromBundleId = "rocker";
+const bundleId = "tw.rockr.app";
+const schemeFromBundleId = "rockr";
 
 const env = {
   portal: process.env.EXPO_PUBLIC_OAUTH_PORTAL_URL ?? "",

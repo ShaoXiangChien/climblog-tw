@@ -1,4 +1,4 @@
-# Rocker (岩究生)
+# Rockr (岩究生)
 
 A React Native mobile app for tracking bouldering sessions at climbing gyms in Taiwan, built with Expo Router and NativeWind.
 
@@ -40,7 +40,7 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd rocker
+   cd rockr
    ```
 
 2. **Install dependencies**
@@ -99,7 +99,7 @@ This starts:
 ## Project Structure
 
 ```
-rocker/
+rockr/
 ├── app/                    # Expo Router screens
 │   ├── (tabs)/            # Tab navigator screens
 │   │   ├── index.tsx      # Home screen

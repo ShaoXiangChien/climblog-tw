@@ -2,11 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Session, ClimbEntry, Settings, generateId } from './types';
 
 const STORAGE_KEYS = {
-  SESSIONS: 'rocker_sessions',
-  ACTIVE_SESSION: 'rocker_active_session',
-  SETTINGS: 'rocker_settings',
-  FAVORITES: 'rocker_favorites',
-  RECENT_GYMS: 'rocker_recent_gyms',
+  SESSIONS: 'rockr_sessions',
+  ACTIVE_SESSION: 'rockr_active_session',
+  SETTINGS: 'rockr_settings',
+  FAVORITES: 'rockr_favorites',
+  RECENT_GYMS: 'rockr_recent_gyms',
 };
 
 // Default settings

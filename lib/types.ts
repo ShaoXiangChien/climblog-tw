@@ -1,4 +1,4 @@
-// Data Models for Rocker (岩究生)
+// Data Models for Rockr (岩究生)
 
 export type GymType = 'bouldering' | 'lead' | 'mixed';
 

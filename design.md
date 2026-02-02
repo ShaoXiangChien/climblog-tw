@@ -1,4 +1,4 @@
-# Rocker (岩究生) - Mobile App Interface Design
+# Rockr (岩究生) - Mobile App Interface Design
 
 ## Design Philosophy
 

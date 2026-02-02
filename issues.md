@@ -1,0 +1,1 @@
+[ ] in 紀錄 tab, when i click on a gym, it won't navigate to 'start session' screen, but the session actually started 

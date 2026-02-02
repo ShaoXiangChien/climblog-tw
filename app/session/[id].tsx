@@ -47,7 +47,7 @@ function StoryCard({
       <View style={styles.storyContent}>
         {/* Top badge */}
         <View style={styles.storyBadge}>
-          <Text style={styles.storyBadgeText}>🧗 Rocker</Text>
+          <Text style={styles.storyBadgeText}>🧗 Rockr</Text>
         </View>
 
         {/* Main stats */}
