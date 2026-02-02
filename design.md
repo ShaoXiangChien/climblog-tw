@@ -1,4 +1,4 @@
-# ClimbLog TW - Mobile App Interface Design
+# Rocker (岩究生) - Mobile App Interface Design
 
 ## Design Philosophy
 

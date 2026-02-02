@@ -1,4 +1,4 @@
-// Data Models for ClimbLog TW
+// Data Models for Rocker (岩究生)
 
 export type GymType = 'bouldering' | 'lead' | 'mixed';
 

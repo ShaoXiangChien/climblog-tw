@@ -8,14 +8,14 @@ import type { ExpoConfig } from "expo/config";
 // Android requires each dot-separated segment to start with a letter
 // Bundle Identifier - use reverse domain format
 // Must be unique and can only contain letters, numbers, and dots
-const bundleId = "tw.climblog.app";
+const bundleId = "tw.rocker.app";
 // Deep link scheme (used for OAuth callbacks and deep linking)
-const schemeFromBundleId = "climblog";
+const schemeFromBundleId = "rocker";
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "ClimbLog TW",
-  appSlug: "climblog-tw",
+  appName: "Rocker",
+  appSlug: "rocker",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
   logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663283583263/TdvCMdrGMUOaAmso.png",

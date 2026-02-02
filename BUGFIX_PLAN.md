@@ -1,7 +1,7 @@
-# ClimbLog TW - Bug Fix & Improvement Plan
+# Rocker (岩究生) - Bug Fix & Improvement Plan
 
 > **創建日期**: 2026-01-31  
-> **目標**: 根據用戶測試反饋，修復核心問題並優化用戶體驗
+> **目標**: 根據用戶測試反饋,修復核心問題並優化用戶體驗
 
 ---
 

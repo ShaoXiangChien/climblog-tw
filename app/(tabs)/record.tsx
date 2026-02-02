@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform, Modal, TextInput, ScrollView, FlatList, Alert, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -418,6 +419,7 @@ function SessionRunningScreen() {
   
   const colors = useColors();
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Get safe area insets for proper spacing
   const activeSession = useActiveSession();
   const { endSession, addEntry } = useStoreActions();
   const [elapsed, setElapsed] = useState(0);
@@ -552,8 +554,11 @@ function SessionRunningScreen() {
         )}
       </View>
 
-      {/* Bottom Actions */}
-      <View style={[styles.bottomActions, { backgroundColor: colors.background }]}>
+      {/* Bottom Actions - with safe area padding to avoid tab bar overlap */}
+      <View style={[styles.bottomActions, { 
+        backgroundColor: colors.background,
+        paddingBottom: Math.max(insets.bottom + 60, 70), // Safe area + tab bar height + extra breathing room
+      }]}>
         <Pressable
           onPress={handleEndSession}
           style={({ pressed }) => [
@@ -781,8 +786,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
-    padding: 16,
-    paddingBottom: 32,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    // paddingBottom handled dynamically with safe area insets
     gap: 12,
   },
   endButton: {
@@ -820,6 +826,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 20,
     paddingBottom: 40,
+    maxHeight: '85%', // Give the modal a maximum height so it's visible
+    minHeight: 500, // Ensure modal is tall enough to show content
   },
   modalHeader: {
     flexDirection: 'row',

@@ -92,7 +92,7 @@ export default function ProfileScreen() {
 
   const handleAbout = () => {
     Alert.alert(
-      'ClimbLog TW',
+      'Rocker (岩究生)',
       '版本 1.0.0\n\n台灣攀岩 Logbook\n快速找館、記錄攀爬、分享成果',
       [{ text: '確定' }]
     );
@@ -176,7 +176,7 @@ export default function ProfileScreen() {
           <View style={[styles.settingsGroup, { borderColor: colors.border }]}>
             <SettingItem
               icon="figure.climbing"
-              title="關於 ClimbLog TW"
+              title="關於 Rocker"
               onPress={handleAbout}
             />
           </View>
@@ -185,7 +185,7 @@ export default function ProfileScreen() {
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.muted }]}>
-            ClimbLog TW v1.0.0
+            Rocker v1.0.0
           </Text>
           <Text style={[styles.footerText, { color: colors.muted }]}>
             Made with ❤️ for climbers in Taiwan
