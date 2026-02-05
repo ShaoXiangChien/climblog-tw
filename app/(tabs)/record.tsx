@@ -822,12 +822,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
+    flex: 1,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
     paddingBottom: 40,
-    maxHeight: '85%', // Give the modal a maximum height so it's visible
-    minHeight: 500, // Ensure modal is tall enough to show content
   },
   modalHeader: {
     flexDirection: 'row',

@@ -123,18 +123,17 @@ export function GymMap({ gyms, userLocation, onGymPress, selectedGymId }: GymMap
             coordinate={{ latitude: gym.lat, longitude: gym.lng }}
             onPress={() => handleMarkerPress(gym.id)}
           >
-            {/* Custom Marker */}
+            {/* Custom Marker with Name */}
             <View style={styles.markerWrapper}>
-              <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
-                <IconSymbol name="figure.climbing" size={20} color="#FFFFFF" />
-              </View>
-              <View style={[styles.markerArrow, { borderTopColor: colors.primary }]} />
-              {/* Gym Name Label */}
-              <View style={[styles.markerLabel, { backgroundColor: colors.surface }]}>
-                <Text style={[styles.markerLabelText, { color: colors.foreground }]} numberOfLines={1}>
+              <View style={[styles.markerCard, { backgroundColor: colors.surface }]}>
+                <View style={[styles.markerIconContainer, { backgroundColor: colors.primary }]}>
+                  <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
+                </View>
+                <Text style={[styles.markerName, { color: colors.foreground }]} numberOfLines={1}>
                   {gym.name}
                 </Text>
               </View>
+              <View style={[styles.markerArrow, { borderTopColor: colors.surface }]} />
             </View>
 
             {/* Callout */}
@@ -222,13 +221,15 @@ const styles = StyleSheet.create({
   markerWrapper: {
     alignItems: 'center',
   },
-  markerContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
+  markerCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 3,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    gap: 6,
+    maxWidth: 140,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
@@ -236,33 +237,28 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
   },
+  markerIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  markerName: {
+    fontSize: 11,
+    fontWeight: '700',
+    flex: 1,
+  },
   markerArrow: {
     width: 0,
     height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderTopWidth: 10,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     alignSelf: 'center',
-    marginTop: -3,
-  },
-  markerLabel: {
-    marginTop: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    maxWidth: 120,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  markerLabelText: {
-    fontSize: 11,
-    fontWeight: '600',
-    textAlign: 'center',
+    marginTop: -2,
   },
 
   // Callout

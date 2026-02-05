@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, Platform, Alert, Share, Modal } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, Platform, Alert, Share, Modal, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as MediaLibrary from 'expo-media-library';
@@ -228,6 +228,7 @@ export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const session = useSessionById(id);
   const [showStoryCard, setShowStoryCard] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<any>(null);
 
   if (!session) {
     return (
@@ -315,9 +316,21 @@ export default function SessionDetailScreen() {
             攀爬紀錄 ({session.entries.length})
           </Text>
           {session.entries.map((entry, index) => (
-            <View
+            <Pressable
               key={entry.id}
-              style={[styles.entryCard, { backgroundColor: colors.surface }]}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                if (entry.mediaUri) {
+                  setSelectedEntry(entry);
+                }
+              }}
+              style={({ pressed }) => [
+                styles.entryCard,
+                { backgroundColor: colors.surface },
+                pressed && entry.mediaUri && { opacity: 0.7 },
+              ]}
             >
               <View
                 style={[
@@ -334,13 +347,16 @@ export default function SessionDetailScreen() {
                 <Text style={[styles.entryAttempts, { color: colors.muted }]}>
                   {entry.attempts} 次嘗試
                 </Text>
+                {entry.note && (
+                  <Text style={[styles.entryNote, { color: colors.muted }]} numberOfLines={2}>
+                    {entry.note}
+                  </Text>
+                )}
               </View>
-              {entry.note && (
-                <Text style={[styles.entryNote, { color: colors.muted }]} numberOfLines={2}>
-                  {entry.note}
-                </Text>
+              {entry.mediaUri && (
+                <Image source={{ uri: entry.mediaUri }} style={styles.entryThumbnail} />
               )}
-            </View>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
@@ -372,6 +388,37 @@ export default function SessionDetailScreen() {
         gymName={gym?.name || '攀岩館'}
         date={dateStr}
       />
+
+      {/* Entry Detail Modal */}
+      <Modal visible={!!selectedEntry} animationType="fade" transparent>
+        <Pressable 
+          style={styles.entryModalOverlay}
+          onPress={() => setSelectedEntry(null)}
+        >
+          <View style={styles.entryModalContent}>
+            {selectedEntry?.mediaUri && (
+              <Image 
+                source={{ uri: selectedEntry.mediaUri }} 
+                style={styles.entryModalImage}
+                resizeMode="contain"
+              />
+            )}
+            {selectedEntry?.note && (
+              <View style={[styles.entryModalNote, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.entryModalNoteText, { color: colors.foreground }]}>
+                  {selectedEntry.note}
+                </Text>
+              </View>
+            )}
+            <Pressable
+              onPress={() => setSelectedEntry(null)}
+              style={[styles.entryModalClose, { backgroundColor: colors.surface }]}
+            >
+              <IconSymbol name="xmark" size={24} color={colors.foreground} />
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </ScreenContainer>
   );
 }
@@ -496,7 +543,46 @@ const styles = StyleSheet.create({
   },
   entryNote: {
     fontSize: 12,
-    maxWidth: 120,
+    flex: 1,
+  },
+  entryThumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+  },
+  entryModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  entryModalContent: {
+    width: '90%',
+    maxHeight: '80%',
+  },
+  entryModalImage: {
+    width: '100%',
+    height: 400,
+    borderRadius: 12,
+  },
+  entryModalNote: {
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 12,
+  },
+  entryModalNoteText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  entryModalClose: {
+    position: 'absolute',
+    top: -50,
+    right: 0,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bottomCTA: {
     position: 'absolute',
@@ -582,13 +668,13 @@ const styles = StyleSheet.create({
   storyCard: {
     width: 1080,
     height: 1920,
-    backgroundColor: '#FF6B35',
+    backgroundColor: 'transparent',
     transform: [{ scale: 200 / 1080 }],
     transformOrigin: 'top left',
   },
   storyOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'transparent',
   },
   storyContent: {
     flex: 1,
