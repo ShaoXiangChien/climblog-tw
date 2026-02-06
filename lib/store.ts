@@ -185,8 +185,10 @@ export async function toggleFavorite(gymId: string): Promise<boolean> {
   } else {
     state.favorites = [...state.favorites, gymId];
   }
+  // Notify listeners immediately for UI update
   notifyListeners();
-  await saveFavorites();
+  // Save to storage asynchronously
+  saveFavorites().catch(err => console.error('Failed to save favorites:', err));
   return !isFav; // Return new favorite status
 }
 
