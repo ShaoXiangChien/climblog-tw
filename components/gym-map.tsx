@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, Platform, Dimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Platform, Dimensions, Image } from 'react-native';
 import MapView, { Marker, Callout, Region, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Haptics from 'expo-haptics';
 
@@ -33,6 +33,23 @@ interface GymMapProps {
   userLocation: { latitude: number; longitude: number } | null;
   onGymPress: (gymId: string) => void;
   selectedGymId?: string | null;
+}
+
+// Custom Marker Component
+function CustomMarker({ gym, colors }: { gym: GymWithDistance; colors: any }) {
+  return (
+    <View style={styles.markerWrapper}>
+      <View style={[styles.markerCard, { backgroundColor: colors.surface }]}>
+        <View style={[styles.markerIconContainer, { backgroundColor: colors.primary }]}>
+          <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
+        </View>
+        <Text style={[styles.markerName, { color: colors.foreground }]} numberOfLines={1}>
+          {gym.name}
+        </Text>
+      </View>
+      <View style={[styles.markerArrow, { borderTopColor: colors.surface }]} />
+    </View>
+  );
 }
 
 export function GymMap({ gyms, userLocation, onGymPress, selectedGymId }: GymMapProps) {
@@ -122,19 +139,9 @@ export function GymMap({ gyms, userLocation, onGymPress, selectedGymId }: GymMap
             key={gym.id}
             coordinate={{ latitude: gym.lat, longitude: gym.lng }}
             onPress={() => handleMarkerPress(gym.id)}
+            tracksViewChanges={false}
           >
-            {/* Custom Marker with Name */}
-            <View style={styles.markerWrapper}>
-              <View style={[styles.markerCard, { backgroundColor: colors.surface }]}>
-                <View style={[styles.markerIconContainer, { backgroundColor: colors.primary }]}>
-                  <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
-                </View>
-                <Text style={[styles.markerName, { color: colors.foreground }]} numberOfLines={1}>
-                  {gym.name}
-                </Text>
-              </View>
-              <View style={[styles.markerArrow, { borderTopColor: colors.surface }]} />
-            </View>
+            <CustomMarker gym={gym} colors={colors} />
 
             {/* Callout */}
             <Callout

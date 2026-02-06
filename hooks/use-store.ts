@@ -59,8 +59,8 @@ export function useRecentGyms(): RecentGymVisit[] {
 
 // Hook to check if a gym is favorited
 export function useIsFavorite(gymId: string): boolean {
-  const favorites = useFavorites();
-  return favorites.includes(gymId);
+  const state = useStore();
+  return state.favorites.includes(gymId);
 }
 
 // Hook to check if store is loaded
