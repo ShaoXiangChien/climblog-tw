@@ -42,7 +42,7 @@ const config: ExpoConfig = {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
     // Build number - increment this for each new submission to App Store
-    buildNumber: "2",
+    buildNumber: "6",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },

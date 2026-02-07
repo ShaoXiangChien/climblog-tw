@@ -20,10 +20,26 @@ function QuickStartScreen() {
   const { startSession } = useStoreActions();
 
   const handleSelectGym = async (gymId: string) => {
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    await startSession(gymId);
+    const gym = getGymById(gymId);
+    if (!gym) return;
+
+    Alert.alert(
+      '開始攀爬',
+      `確定要在 ${gym.name} 開始記錄嗎？`,
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '開始',
+          onPress: async () => {
+            if (Platform.OS !== 'web') {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+            await startSession(gymId);
+            router.push('/record');
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -421,7 +437,7 @@ function SessionRunningScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets(); // Get safe area insets for proper spacing
   const activeSession = useActiveSession();
-  const { endSession, addEntry } = useStoreActions();
+  const { endSession, addEntry, deleteEntry } = useStoreActions();
   const [elapsed, setElapsed] = useState(0);
   const [showAddEntry, setShowAddEntry] = useState(false);
 
@@ -469,6 +485,26 @@ function SessionRunningScreen() {
 
   const handleAddEntry = async (entry: { grade: string; result: ClimbResult; attempts: number; note: string | null; mediaUri: string | null }) => {
     await addEntry(entry);
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    Alert.alert(
+      '刪除紀錄？',
+      '確定要刪除這條路線紀錄嗎？',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '刪除',
+          style: 'destructive',
+          onPress: async () => {
+            if (Platform.OS !== 'web') {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+            await deleteEntry(entryId);
+          },
+        },
+      ]
+    );
   };
 
   if (!activeSession || !gym) {
@@ -546,6 +582,17 @@ function SessionRunningScreen() {
                     {item.note}
                   </Text>
                 )}
+                {/* Delete Button */}
+                <Pressable
+                  onPress={() => handleDeleteEntry(item.id)}
+                  style={({ pressed }) => [
+                    styles.deleteButton,
+                    { backgroundColor: colors.error + '20' },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <IconSymbol name="trash" size={18} color={colors.error} />
+                </Pressable>
               </View>
             )}
             contentContainerStyle={styles.entriesList}
@@ -780,6 +827,13 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 8,
   },
+  deleteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   bottomActions: {
     position: 'absolute',
     bottom: 0,
@@ -822,7 +876,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    height: '75%',
+    height: '90%',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,

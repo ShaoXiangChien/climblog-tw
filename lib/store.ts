@@ -13,6 +13,8 @@ const STORAGE_KEYS = {
 const DEFAULT_SETTINGS: Settings = {
   gradeSystem: 'v-grade',
   defaultPrivacy: 'private',
+  userName: null,
+  avatarUri: null,
 };
 
 // Recent gym visit record
@@ -180,15 +182,26 @@ export function getSessionsByGymId(gymId: string): Session[] {
 // Toggle favorite status for a gym
 export async function toggleFavorite(gymId: string): Promise<boolean> {
   const isFav = state.favorites.includes(gymId);
+  let newFavorites;
+  
   if (isFav) {
-    state.favorites = state.favorites.filter(id => id !== gymId);
+    newFavorites = state.favorites.filter(id => id !== gymId);
   } else {
-    state.favorites = [...state.favorites, gymId];
+    newFavorites = [...state.favorites, gymId];
   }
+  
+  // Update state immediately
+  state = {
+    ...state,
+    favorites: newFavorites
+  };
+  
   // Notify listeners immediately for UI update
   notifyListeners();
+  
   // Save to storage asynchronously
   saveFavorites().catch(err => console.error('Failed to save favorites:', err));
+  
   return !isFav; // Return new favorite status
 }
 
@@ -273,13 +286,31 @@ export async function addEntry(entry: Omit<ClimbEntry, 'id' | 'sessionId' | 'cre
     createdAt: Date.now(),
   };
 
-  state.activeSession = {
-    ...state.activeSession,
-    entries: [...state.activeSession.entries, newEntry],
+  state = {
+    ...state,
+    activeSession: state.activeSession ? {
+      ...state.activeSession,
+      entries: [...state.activeSession.entries, newEntry],
+    } : null,
   };
   notifyListeners();
   await saveActiveSession();
   return newEntry;
+}
+
+// Delete entry from active session
+export async function deleteEntry(entryId: string): Promise<void> {
+  if (!state.activeSession) return;
+
+  state = {
+    ...state,
+    activeSession: {
+      ...state.activeSession,
+      entries: state.activeSession.entries.filter(e => e.id !== entryId),
+    },
+  };
+  notifyListeners();
+  await saveActiveSession();
 }
 
 export async function updateSettings(updates: Partial<Settings>): Promise<void> {

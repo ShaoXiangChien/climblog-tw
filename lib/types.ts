@@ -45,6 +45,9 @@ export type GradeSystem = 'v-grade';
 export interface Settings {
   gradeSystem: GradeSystem;
   defaultPrivacy: 'private' | 'public';
+  // Profile info
+  userName: string | null;
+  avatarUri: string | null;
 }
 
 // Computed types for UI

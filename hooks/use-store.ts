@@ -96,6 +96,11 @@ export function useStoreActions() {
     return storeAddEntry(entry);
   }, []);
 
+  const deleteEntry = useCallback(async (entryId: string) => {
+    const { deleteEntry: storeDeleteEntry } = await import('@/lib/store');
+    return storeDeleteEntry(entryId);
+  }, []);
+
   const updateSettings = useCallback(async (updates: Partial<Settings>) => {
     return storeUpdateSettings(updates);
   }, []);
@@ -108,6 +113,7 @@ export function useStoreActions() {
     startSession,
     endSession,
     addEntry,
+    deleteEntry,
     updateSettings,
     toggleFavorite,
   };

@@ -20,6 +20,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScreenContainer } from '@/components/screen-container';
+import { GymCard } from '@/components/gym-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColors } from '@/hooks/use-colors';
 import { useLocation, calculateDistance, formatDistance } from '@/hooks/use-location';
@@ -68,6 +69,18 @@ const TAIWAN_CENTER = {
   longitude: 121.5654,
   latitudeDelta: 0.5,
   longitudeDelta: 0.5,
+};
+
+// Region coordinates for map navigation
+const REGION_COORDINATES: Record<string, { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number }> = {
+  '全部': TAIWAN_CENTER,
+  '台北': { latitude: 25.0478, longitude: 121.5319, latitudeDelta: 0.05, longitudeDelta: 0.05 },
+  '新北': { latitude: 25.0122, longitude: 121.4654, latitudeDelta: 0.15, longitudeDelta: 0.15 },
+  '桃園': { latitude: 24.9936, longitude: 121.3010, latitudeDelta: 0.1, longitudeDelta: 0.1 },
+  '台中': { latitude: 24.1477, longitude: 120.6736, latitudeDelta: 0.1, longitudeDelta: 0.1 },
+  '台南': { latitude: 22.9997, longitude: 120.2270, latitudeDelta: 0.1, longitudeDelta: 0.1 },
+  '高雄': { latitude: 22.6273, longitude: 120.3014, latitudeDelta: 0.1, longitudeDelta: 0.1 },
+  '其他': TAIWAN_CENTER,
 };
 
 interface GymWithDistance extends Gym {
@@ -121,7 +134,7 @@ function ViewModeToggle({ mode, onModeChange }: { mode: ViewMode; onModeChange: 
 }
 
 // Hero Banner Component - Sports Tech Style
-function HeroBanner({ onNearestPress, onMapPress }: { onNearestPress: () => void; onMapPress: () => void }) {
+function HeroBanner({ onFavoritesPress, onMapPress }: { onFavoritesPress: () => void; onMapPress: () => void }) {
   const colors = useColors();
 
   return (
@@ -144,7 +157,7 @@ function HeroBanner({ onNearestPress, onMapPress }: { onNearestPress: () => void
                 if (Platform.OS !== 'web') {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 }
-                onNearestPress();
+                onFavoritesPress();
               }}
               style={({ pressed }) => [
                 styles.heroButton,
@@ -152,8 +165,8 @@ function HeroBanner({ onNearestPress, onMapPress }: { onNearestPress: () => void
                 pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
               ]}
             >
-              <IconSymbol name="location.fill" size={16} color="#0D0D0F" />
-              <Text style={[styles.heroButtonText, { color: '#0D0D0F' }]}>最近的館</Text>
+              <IconSymbol name="heart.fill" size={16} color="#0D0D0F" />
+              <Text style={[styles.heroButtonText, { color: '#0D0D0F' }]}>我的收藏</Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -292,75 +305,7 @@ function RecentGymCard({
 }
 
 // Gym List Card - Sports Tech Style
-function GymCard({ gym, distance, onPress }: { gym: Gym; distance: number | null; onPress: () => void }) {
-  const colors = useColors();
-
-  return (
-    <Pressable
-      onPress={() => {
-        if (Platform.OS !== 'web') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-        onPress();
-      }}
-      style={({ pressed }) => [
-        styles.gymCard,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-        },
-        pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
-      ]}
-    >
-      {/* Left: Icon with glow effect */}
-      <View style={[styles.gymIcon, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}>
-        <IconSymbol name="figure.climbing" size={28} color={colors.primary} />
-      </View>
-
-      {/* Middle: Info */}
-      <View style={styles.gymInfo}>
-        <View style={styles.gymNameRow}>
-          <Text style={[styles.gymName, { color: colors.foreground }]} numberOfLines={1}>
-            {gym.name}
-          </Text>
-        </View>
-        <Text style={[styles.gymLocation, { color: colors.muted }]}>
-          {gym.city}・{gym.district}
-        </Text>
-        <View style={styles.gymMeta}>
-          <View style={[styles.typeBadge, { backgroundColor: colors.primary + '30', borderColor: colors.primary + '50' }]}>
-            <Text style={[styles.typeBadgeText, { color: colors.primary }]}>
-              {TYPE_LABELS[gym.type]}
-            </Text>
-          </View>
-          {gym.priceFrom && (
-            <Text style={[styles.priceText, { color: colors.muted }]}>
-              ${gym.priceFrom}起
-            </Text>
-          )}
-        </View>
-        {gym.tags.length > 0 && (
-          <Text style={[styles.tagsText, { color: colors.muted }]} numberOfLines={1}>
-            {gym.tags.slice(0, 3).map(t => `#${t}`).join(' ')}
-          </Text>
-        )}
-      </View>
-
-      {/* Right: Distance & Arrow */}
-      <View style={styles.gymRight}>
-        {distance !== null && (
-          <View style={[styles.distanceBadge, { backgroundColor: colors.success + '20', borderColor: colors.success + '40' }]}>
-            <IconSymbol name="location.fill" size={12} color={colors.success} />
-            <Text style={[styles.distanceText, { color: colors.success }]}>
-              {formatDistance(distance)}
-            </Text>
-          </View>
-        )}
-        <IconSymbol name="chevron.right" size={18} color={colors.primary} />
-      </View>
-    </Pressable>
-  );
-}
+// Moved to components/gym-card.tsx
 
 // Filter Chip Component
 function FilterChip({
@@ -476,6 +421,7 @@ export default function ExploreScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState<RegionFilter>('全部');
+  const [selectedMapRegion, setSelectedMapRegion] = useState<RegionFilter>('全部');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('全部');
   const [sortBy, setSortBy] = useState<SortOption>('distance');
   const [refreshing, setRefreshing] = useState(false);
@@ -501,16 +447,13 @@ export default function ExploreScreen() {
   const filteredGyms = useMemo(() => {
     let result = gymsWithDistance;
 
-    // Search filter
+    // Search filter - simple concat of name and address
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(
-        gym =>
-          gym.name.toLowerCase().includes(query) ||
-          gym.city.includes(query) ||
-          gym.district.includes(query) ||
-          gym.tags.some(tag => tag.includes(query))
-      );
+      result = result.filter(gym => {
+        const searchText = `${gym.name} ${gym.address}`.toLowerCase();
+        return searchText.includes(query);
+      });
     }
 
     // Region filter
@@ -586,17 +529,28 @@ export default function ExploreScreen() {
     router.push(`/gym/${gymId}` as any);
   }, [router]);
 
-  const handleNearestPress = useCallback(() => {
-    if (filteredGyms.length > 0 && filteredGyms[0].distance !== null) {
-      handleGymPress(filteredGyms[0].id);
-    }
-  }, [filteredGyms, handleGymPress]);
+  const handleFavoritesPress = useCallback(() => {
+    router.push('/favorites');
+  }, [router]);
 
   const handleMapPress = useCallback(() => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     setViewMode('map');
+  }, []);
+
+  const handleMapRegionSelect = useCallback((region: RegionFilter) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setSelectedMapRegion(region);
+    
+    // Animate map to the selected region
+    const coordinates = REGION_COORDINATES[region];
+    if (mapRef.current && coordinates) {
+      mapRef.current.animateToRegion(coordinates, 500); // 500ms animation
+    }
   }, []);
 
   const openInGoogleMaps = useCallback((gym: Gym) => {
@@ -613,59 +567,10 @@ export default function ExploreScreen() {
   const renderListHeader = () => (
     <>
       {/* Hero Banner */}
-      <HeroBanner onNearestPress={handleNearestPress} onMapPress={handleMapPress} />
+      <HeroBanner onFavoritesPress={handleFavoritesPress} onMapPress={handleMapPress} />
 
-      {/* Recently Visited Section */}
-      {recentVisitedGyms.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>最近造訪</Text>
-            <IconSymbol name="clock.fill" size={18} color={colors.primary} />
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.featuredScroll}
-          >
-            {recentVisitedGyms.map(gym => (
-              <RecentGymCard
-                key={gym.id}
-                gym={gym}
-                distance={gym.distance}
-                lastVisitTime={gym.lastVisitTime}
-                visitCount={gym.visitCount}
-                onPress={() => handleGymPress(gym.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      )}
 
-      {/* Favorites Section */}
-      {favoriteGyms.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>我的收藏</Text>
-            <IconSymbol name="heart.fill" size={18} color={colors.error} />
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.featuredScroll}
-          >
-            {favoriteGyms.map(gym => (
-              <FeaturedGymCard
-                key={gym.id}
-                gym={gym}
-                distance={gym.distance}
-                onPress={() => handleGymPress(gym.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* Featured Section */}
+      {/* Featured Section
       {featuredGyms.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -687,7 +592,7 @@ export default function ExploreScreen() {
             ))}
           </ScrollView>
         </View>
-      )}
+      )} */}
 
       {/* View Mode Toggle */}
       <View style={styles.viewToggleContainer}>
@@ -740,7 +645,7 @@ export default function ExploreScreen() {
           </ScrollView>
         </View>
 
-        <View style={styles.filterRow}>
+        {/* <View style={styles.filterRow}>
           <Text style={[styles.filterLabel, { color: colors.muted }]}>類型</Text>
           <View style={styles.filterChips}>
             {TYPES.map(type => (
@@ -752,7 +657,7 @@ export default function ExploreScreen() {
               />
             ))}
           </View>
-        </View>
+        </View> */}
 
         {/* Sort Options */}
         <View style={styles.sortRow}>
@@ -828,7 +733,7 @@ export default function ExploreScreen() {
           showsMyLocationButton={false}
           showsCompass={true}
         >
-          {filteredGyms.map(gym => (
+          {gymsWithDistance.map(gym => (
             <Marker
               key={gym.id}
               coordinate={{ latitude: gym.lat, longitude: gym.lng }}
@@ -839,8 +744,20 @@ export default function ExploreScreen() {
               }}
             >
               {/* Custom Marker */}
-              <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
+              <View style={[
+                styles.markerContainer, 
+                { 
+                  backgroundColor: colors.primary,
+                  width: 'auto',
+                  paddingHorizontal: 12,
+                  flexDirection: 'row',
+                  gap: 6
+                }
+              ]}>
                 <IconSymbol name="figure.climbing" size={16} color="#FFFFFF" />
+                <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600' }} numberOfLines={1}>
+                  {gym.name}
+                </Text>
               </View>
               <View style={[styles.markerArrow, { borderTopColor: colors.primary }]} />
 
@@ -900,23 +817,18 @@ export default function ExploreScreen() {
               {REGIONS.slice(0, 5).map(region => (
                 <Pressable
                   key={region}
-                  onPress={() => {
-                    if (Platform.OS !== 'web') {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                    setRegionFilter(region);
-                  }}
+                  onPress={() => handleMapRegionSelect(region)}
                   style={[
                     styles.mapFilterChip,
                     {
-                      backgroundColor: regionFilter === region ? colors.primary : colors.surface,
+                      backgroundColor: selectedMapRegion === region ? colors.primary : colors.surface,
                     },
                   ]}
                 >
                   <Text
                     style={[
                       styles.mapFilterChipText,
-                      { color: regionFilter === region ? '#FFFFFF' : colors.foreground },
+                      { color: selectedMapRegion === region ? '#FFFFFF' : colors.foreground },
                     ]}
                   >
                     {region}
@@ -927,13 +839,6 @@ export default function ExploreScreen() {
           </ScrollView>
         </View>
 
-        {/* Gym Count Badge */}
-        <View style={[styles.countBadge, { backgroundColor: colors.surface }]}>
-          <IconSymbol name="figure.climbing" size={14} color={colors.primary} />
-          <Text style={[styles.countText, { color: colors.foreground }]}>
-            {filteredGyms.length} 間
-          </Text>
-        </View>
       </View>
     );
   };

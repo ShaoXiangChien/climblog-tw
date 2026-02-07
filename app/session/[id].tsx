@@ -34,6 +34,7 @@ function StoryCard({
   date: string;
   cardRef: React.RefObject<View | null>;
 }) {
+  // TODO: 左上角放rockr logo + 用戶名
   return (
     <View
       ref={cardRef as any}
