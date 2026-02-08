@@ -37,6 +37,7 @@ const config: ExpoConfig = {
     eas: {
       projectId: "af3b6b78-50f5-40ed-a91a-a5b0a464c485",
     },
+    fastApiUrl: process.env.EXPO_PUBLIC_FASTAPI_URL || "http://localhost:8000",
   },
   ios: {
     supportsTablet: true,

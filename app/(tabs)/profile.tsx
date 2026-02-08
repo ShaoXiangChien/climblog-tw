@@ -368,6 +368,23 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Community Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>社群貢獻</Text>
+          <View style={[styles.settingsGroup, { borderColor: colors.border }]}>
+            <SettingItem
+              icon="location.fill"
+              title="新增場館"
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                import('expo-router').then(({ router }) => router.push('/submit-gym'));
+              }}
+            />
+          </View>
+        </View>
+
         {/* Settings Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>設定</Text>
@@ -395,6 +412,17 @@ export default function ProfileScreen() {
               icon="figure.climbing"
               title="關於 Rockr"
               onPress={handleAbout}
+            />
+            <View style={[styles.settingDivider, { backgroundColor: colors.border }]} />
+            <SettingItem
+              icon="bubble.left.and.bubble.right.fill"
+              title="意見回饋"
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                import('expo-router').then(({ router }) => router.push('/feedback'));
+              }}
             />
           </View>
         </View>
