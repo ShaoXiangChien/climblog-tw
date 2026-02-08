@@ -78,7 +78,11 @@ export async function loadStore(): Promise<void> {
     notifyListeners();
   } catch (error) {
     console.error('Failed to load store:', error);
-    state.isLoaded = true;
+    // Create a new state object to ensure React detects the change
+    state = {
+      ...state,
+      isLoaded: true,
+    };
     notifyListeners();
   }
 }
@@ -209,10 +213,12 @@ export async function toggleFavorite(gymId: string): Promise<boolean> {
 export async function updateRecentGym(gymId: string): Promise<void> {
   const existingIndex = state.recentGyms.findIndex(r => r.gymId === gymId);
   
+  let newRecentGyms: RecentGymVisit[];
+  
   if (existingIndex >= 0) {
     // Update existing record
     const existing = state.recentGyms[existingIndex];
-    state.recentGyms = [
+    newRecentGyms = [
       {
         gymId,
         lastVisitTime: Date.now(),
@@ -222,7 +228,7 @@ export async function updateRecentGym(gymId: string): Promise<void> {
     ];
   } else {
     // Add new record
-    state.recentGyms = [
+    newRecentGyms = [
       {
         gymId,
         lastVisitTime: Date.now(),
@@ -233,7 +239,13 @@ export async function updateRecentGym(gymId: string): Promise<void> {
   }
   
   // Keep only the 10 most recent gyms
-  state.recentGyms = state.recentGyms.slice(0, 10);
+  newRecentGyms = newRecentGyms.slice(0, 10);
+  
+  // Create a new state object to ensure React detects the change
+  state = {
+    ...state,
+    recentGyms: newRecentGyms,
+  };
   
   notifyListeners();
   await saveRecentGyms();
@@ -250,7 +262,11 @@ export async function startSession(gymId: string, note?: string): Promise<Sessio
     entries: [],
   };
 
-  state.activeSession = session;
+  // Create a new state object to ensure React detects the change
+  state = {
+    ...state,
+    activeSession: session,
+  };
   notifyListeners();
   await saveActiveSession();
   
@@ -268,8 +284,12 @@ export async function endSession(): Promise<Session | null> {
     endTime: Date.now(),
   };
 
-  state.sessions = [completedSession, ...state.sessions];
-  state.activeSession = null;
+  // Create a new state object to ensure React detects the change
+  state = {
+    ...state,
+    sessions: [completedSession, ...state.sessions],
+    activeSession: null,
+  };
   notifyListeners();
 
   await Promise.all([saveSessions(), saveActiveSession()]);
@@ -314,14 +334,22 @@ export async function deleteEntry(entryId: string): Promise<void> {
 }
 
 export async function updateSettings(updates: Partial<Settings>): Promise<void> {
-  state.settings = { ...state.settings, ...updates };
+  // Create a new state object to ensure React detects the change
+  state = {
+    ...state,
+    settings: { ...state.settings, ...updates },
+  };
   notifyListeners();
   await saveSettings();
 }
 
 // Delete session
 export async function deleteSession(sessionId: string): Promise<void> {
-  state.sessions = state.sessions.filter(s => s.id !== sessionId);
+  // Create a new state object to ensure React detects the change
+  state = {
+    ...state,
+    sessions: state.sessions.filter(s => s.id !== sessionId),
+  };
   notifyListeners();
   await saveSessions();
 }

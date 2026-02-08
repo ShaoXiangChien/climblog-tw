@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform, Modal, TextInput, ScrollView, FlatList, Alert, Image, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,6 @@ import { V_GRADES, formatDuration, getHighestGrade, ClimbResult } from '@/lib/ty
 // Quick Start Screen - Select a gym to start session
 function QuickStartScreen() {
   const colors = useColors();
-  const router = useRouter();
   const { startSession } = useStoreActions();
 
   const handleSelectGym = async (gymId: string) => {
@@ -34,8 +33,10 @@ function QuickStartScreen() {
             if (Platform.OS !== 'web') {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             }
+            // Start the session - the component will automatically re-render
+            // to show SessionRunningScreen when activeSession state updates
             await startSession(gymId);
-            router.push('/record');
+            // No need for router.push here since we're already on /record route
           },
         },
       ]
