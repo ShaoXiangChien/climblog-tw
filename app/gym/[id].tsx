@@ -34,17 +34,42 @@ export default function GymDetailScreen() {
   }
 
   const handleOpenMaps = () => {
-    const scheme = Platform.select({
-      ios: 'maps:',
-      android: 'geo:',
-      default: 'https://maps.google.com/?q=',
-    });
-    const url = Platform.select({
-      ios: `maps:?address=${encodeURIComponent(gym.address)}`,
-      android: `geo:0,0?q=${encodeURIComponent(gym.address)}`,
-      default: `https://maps.google.com/?q=${encodeURIComponent(gym.address)}`,
-    });
-    Linking.openURL(url);
+    // If device is iOS, show a selection dialog for Apple Maps or Google Maps
+    if (Platform.OS === 'ios') {
+      Alert.alert(
+        '選擇地圖應用程式',
+        '請選擇要使用哪個地圖應用程式開啟地址',
+        [
+          {
+            text: '取消',
+            style: 'cancel',
+          },
+          {
+            text: 'Apple Maps',
+            onPress: () => {
+              // Open with Apple Maps
+              const url = `maps:?address=${encodeURIComponent(gym.address)}`;
+              Linking.openURL(url);
+            },
+          },
+          {
+            text: 'Google Maps',
+            onPress: () => {
+              // Open with Google Maps
+              const url = `https://maps.google.com/?q=${encodeURIComponent(gym.address)}`;
+              Linking.openURL(url);
+            },
+          },
+        ]
+      );
+    } else {
+      // For Android and other platforms, use default behavior
+      const url = Platform.select({
+        android: `geo:0,0?q=${encodeURIComponent(gym.address)}`,
+        default: `https://maps.google.com/?q=${encodeURIComponent(gym.address)}`,
+      });
+      Linking.openURL(url);
+    }
   };
 
   const handleStartSession = async () => {

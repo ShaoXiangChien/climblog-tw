@@ -8,7 +8,7 @@ import { captureRef } from 'react-native-view-shot';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColors } from '@/hooks/use-colors';
-import { useSessionById } from '@/hooks/use-store';
+import { useSessionById, useSettings } from '@/hooks/use-store';
 import { getGymById } from '@/data/gyms';
 import { calculateSessionSummary, formatDuration, getHighestGrade } from '@/lib/types';
 
@@ -28,13 +28,25 @@ function StoryCard({
   gymName,
   date,
   cardRef,
+  textColor = 'white',
+  userName,
 }: {
   summary: ReturnType<typeof calculateSessionSummary>;
   gymName: string;
   date: string;
   cardRef: React.RefObject<View | null>;
+  textColor?: 'white' | 'black';
+  userName?: string | null;
 }) {
   // TODO: 左上角放rockr logo + 用戶名
+  // Define color based on textColor prop
+  const primaryTextColor = textColor === 'white' ? '#FFFFFF' : '#000000';
+  const secondaryTextOpacity = textColor === 'white' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+  const tertiaryTextOpacity = textColor === 'white' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+  const quaternaryTextOpacity = textColor === 'white' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
+  const badgeBackground = textColor === 'white' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+  const dividerColor = textColor === 'white' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+
   return (
     <View
       ref={cardRef as any}
@@ -47,39 +59,41 @@ function StoryCard({
       {/* Content */}
       <View style={styles.storyContent}>
         {/* Top badge */}
-        <View style={styles.storyBadge}>
-          <Text style={styles.storyBadgeText}>🧗 Rockr</Text>
+        <View style={[styles.storyBadge, { backgroundColor: badgeBackground }]}>
+          <Text style={[styles.storyBadgeText, { color: primaryTextColor }]}>
+            🧗 Rockr{userName ? ` • ${userName}` : ''}
+          </Text>
         </View>
 
         {/* Main stats */}
         <View style={styles.storyMain}>
-          <Text style={styles.storyConquerLabel}>CONQUER</Text>
-          <Text style={styles.storyConquerValue}>{summary.conquerCount}</Text>
+          <Text style={[styles.storyConquerLabel, { color: secondaryTextOpacity }]}>CONQUER</Text>
+          <Text style={[styles.storyConquerValue, { color: primaryTextColor }]}>{summary.conquerCount}</Text>
         </View>
 
         {/* Secondary stats */}
         <View style={styles.storyStats}>
           <View style={styles.storyStatItem}>
-            <Text style={styles.storyStatValue}>{summary.highestGrade || '-'}</Text>
-            <Text style={styles.storyStatLabel}>最高難度</Text>
+            <Text style={[styles.storyStatValue, { color: primaryTextColor }]}>{summary.highestGrade || '-'}</Text>
+            <Text style={[styles.storyStatLabel, { color: tertiaryTextOpacity }]}>最高難度</Text>
           </View>
-          <View style={styles.storyStatDivider} />
+          <View style={[styles.storyStatDivider, { backgroundColor: dividerColor }]} />
           <View style={styles.storyStatItem}>
-            <Text style={styles.storyStatValue}>{summary.completionRate}%</Text>
-            <Text style={styles.storyStatLabel}>完成率</Text>
+            <Text style={[styles.storyStatValue, { color: primaryTextColor }]}>{summary.completionRate}%</Text>
+            <Text style={[styles.storyStatLabel, { color: tertiaryTextOpacity }]}>完成率</Text>
           </View>
-          <View style={styles.storyStatDivider} />
+          <View style={[styles.storyStatDivider, { backgroundColor: dividerColor }]} />
           <View style={styles.storyStatItem}>
-            <Text style={styles.storyStatValue}>{formatDuration(summary.duration)}</Text>
-            <Text style={styles.storyStatLabel}>時長</Text>
+            <Text style={[styles.storyStatValue, { color: primaryTextColor }]}>{formatDuration(summary.duration)}</Text>
+            <Text style={[styles.storyStatLabel, { color: tertiaryTextOpacity }]}>時長</Text>
           </View>
         </View>
 
         {/* Bottom info */}
         <View style={styles.storyFooter}>
-          <Text style={styles.storyGymName}>{gymName}</Text>
-          <Text style={styles.storyDate}>{date}</Text>
-          <Text style={styles.storyLocation}>Taiwan 🇹🇼</Text>
+          <Text style={[styles.storyGymName, { color: primaryTextColor }]}>{gymName}</Text>
+          <Text style={[styles.storyDate, { color: secondaryTextOpacity }]}>{date}</Text>
+          <Text style={[styles.storyLocation, { color: quaternaryTextOpacity }]}>Taiwan 🇹🇼</Text>
         </View>
       </View>
     </View>
@@ -93,16 +107,19 @@ function StoryCardModal({
   summary,
   gymName,
   date,
+  userName,
 }: {
   visible: boolean;
   onClose: () => void;
   summary: ReturnType<typeof calculateSessionSummary>;
   gymName: string;
   date: string;
+  userName?: string | null;
 }) {
   const colors = useColors();
   const cardRef = useRef<View | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [textColor, setTextColor] = useState<'white' | 'black'>('white');
 
   const handleShare = async () => {
     if (Platform.OS !== 'web') {
@@ -175,6 +192,59 @@ function StoryCardModal({
             </Pressable>
           </View>
 
+          {/* Text Color Selector */}
+          <View style={styles.colorSelectorContainer}>
+            <Text style={[styles.colorSelectorLabel, { color: colors.muted }]}>字體顏色</Text>
+            <View style={styles.colorSelectorButtons}>
+              <Pressable
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setTextColor('white');
+                }}
+                style={({ pressed }) => [
+                  styles.colorButton,
+                  { 
+                    backgroundColor: '#FFFFFF',
+                    borderColor: textColor === 'white' ? colors.primary : colors.border,
+                    borderWidth: textColor === 'white' ? 3 : 1,
+                  },
+                  pressed && { opacity: 0.7 },
+                ]}
+              >
+                {textColor === 'white' && (
+                  <View style={[styles.colorButtonCheck, { backgroundColor: colors.primary }]}>
+                    <IconSymbol name="checkmark" size={16} color="#FFFFFF" />
+                  </View>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setTextColor('black');
+                }}
+                style={({ pressed }) => [
+                  styles.colorButton,
+                  { 
+                    backgroundColor: '#000000',
+                    borderColor: textColor === 'black' ? colors.primary : colors.border,
+                    borderWidth: textColor === 'black' ? 3 : 1,
+                  },
+                  pressed && { opacity: 0.7 },
+                ]}
+              >
+                {textColor === 'black' && (
+                  <View style={[styles.colorButtonCheck, { backgroundColor: colors.primary }]}>
+                    <IconSymbol name="checkmark" size={16} color="#FFFFFF" />
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          </View>
+
           {/* Card Preview */}
           <View style={styles.cardPreviewContainer}>
             <View style={styles.cardPreviewWrapper}>
@@ -183,6 +253,8 @@ function StoryCardModal({
                 gymName={gymName}
                 date={date}
                 cardRef={cardRef}
+                textColor={textColor}
+                userName={userName}
               />
             </View>
           </View>
@@ -228,6 +300,7 @@ export default function SessionDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const session = useSessionById(id);
+  const settings = useSettings();
   const [showStoryCard, setShowStoryCard] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<any>(null);
 
@@ -388,6 +461,7 @@ export default function SessionDetailScreen() {
         summary={summary}
         gymName={gym?.name || '攀岩館'}
         date={dateStr}
+        userName={settings.userName}
       />
 
       {/* Entry Detail Modal */}
@@ -665,6 +739,35 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  // Color Selector styles
+  colorSelectorContainer: {
+    marginBottom: 20,
+  },
+  colorSelectorLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  colorSelectorButtons: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  colorButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  colorButtonCheck: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   // Story Card styles
   storyCard: {
     width: 1080,
@@ -684,13 +787,11 @@ const styles = StyleSheet.create({
   },
   storyBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 40,
   },
   storyBadgeText: {
-    color: '#FFFFFF',
     fontSize: 36,
     fontWeight: '600',
   },
@@ -699,13 +800,11 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   storyConquerLabel: {
-    color: 'rgba(255,255,255,0.8)',
     fontSize: 48,
     fontWeight: '600',
     letterSpacing: 8,
   },
   storyConquerValue: {
-    color: '#FFFFFF',
     fontSize: 280,
     fontWeight: '800',
     lineHeight: 300,
@@ -721,35 +820,29 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   storyStatValue: {
-    color: '#FFFFFF',
     fontSize: 56,
     fontWeight: '700',
   },
   storyStatLabel: {
-    color: 'rgba(255,255,255,0.7)',
     fontSize: 28,
   },
   storyStatDivider: {
     width: 2,
     height: 60,
-    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   storyFooter: {
     alignItems: 'center',
     gap: 12,
   },
   storyGymName: {
-    color: '#FFFFFF',
     fontSize: 44,
     fontWeight: '700',
     textAlign: 'center',
   },
   storyDate: {
-    color: 'rgba(255,255,255,0.8)',
     fontSize: 32,
   },
   storyLocation: {
-    color: 'rgba(255,255,255,0.6)',
     fontSize: 28,
     marginTop: 8,
   },
